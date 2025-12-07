@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - API Health Monitor</title>
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Login / Setup Page -->
+    <div id="auth-page" class="auth-page">
+        <!-- Header Controls for Auth Page -->
+        <div class="header-controls">
+            <button id="lang-switch" class="lang-switch" onclick="switchLanguage()">EN</button>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🔐 <span data-i18n="admin.title">API 健康监控</span></h1>
+                <p id="auth-subtitle" data-i18n="admin.subtitle.login">管理员登录</p>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+                <div class="form-group">
+                    <label for="username" data-i18n="admin.username">用户名</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password" data-i18n="admin.password">密码</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+                <div id="confirm-password-group" class="form-group hidden">
+                    <label for="confirm-password" data-i18n="admin.confirmPassword">确认密码</label>
+                    <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password">
+                </div>
+                <div id="auth-error" class="error-message hidden"></div>
+                <button type="submit" id="auth-button" class="btn btn-primary btn-large"
+                    data-i18n="admin.login">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="admin-dashboard hidden">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <h1>⚙️ <span data-i18n="panel.title">管理面板</span></h1>
+            </div>
+            <div class="header-right">
+                <span id="admin-username" class="admin-user"></span>
+                <button id="lang-switch-dashboard" class="btn btn-small btn-outline"
+                    onclick="switchLanguage()">EN</button>
+                <button id="logout-btn" class="btn btn-small btn-outline" data-i18n="admin.logout">退出登录</button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="status">📊 <span data-i18n="tab.status">状态</span></button>
+            <button class="tab-btn" data-tab="settings">⚙️ <span data-i18n="tab.settings">设置</span></button>
+            <button class="tab-btn" data-tab="logs">📜 <span data-i18n="tab.logs">日志</span></button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main class="tab-content">
+            <!-- Status Tab -->
+            <div id="tab-status" class="tab-panel active">
+                <div class="panel-header">
+                    <h2 data-i18n="status.title">模型连通性状态</h2>
+                    <div class="action-buttons">
+                        <button id="test-all-btn" class="btn btn-primary">🔍 <span
+                                data-i18n="status.testAll">测试所有模型</span></button>
+                        <button id="refresh-status-btn" class="btn btn-outline">🔄 <span
+                                data-i18n="status.refresh">刷新</span></button>
+                    </div>
+                </div>
+
+                <div id="test-progress" class="test-progress hidden">
+                    <div class="progress-bar-inline">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" data-i18n="status.testing">正在测试模型...</span>
+                </div>
+
+                <div id="status-loading" class="loading-inline">
+                    <div class="spinner-small"></div>
+                    <span data-i18n="status.loading">正在加载状态...</span>
+                </div>
+
+                <div id="model-status-list" class="model-status-list hidden"></div>
+
+                <div id="no-models" class="empty-state hidden">
+                    <p data-i18n="status.noModels">暂无监控模型，请前往设置页面添加。</p>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-panel hidden">
+                <div class="settings-sections">
+                    <!-- API Configuration -->
+                    <section class="settings-section">
+                        <h3>🔗 <span data-i18n="settings.api.title">API 配置</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="api-base-url" data-i18n="settings.api.baseUrl">API 地址</label>
+                                <input type="url" id="api-base-url" placeholder="https://api.example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="api-key" data-i18n="settings.api.key">API 密钥</label>
+                                <input type="password" id="api-key" placeholder="sk-...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="test-interval" data-i18n="settings.api.interval">测试间隔（分钟）</label>
+                            <input type="number" id="test-interval" min="5" max="1440" value="60">
+                        </div>
+                    </section>
+
+                    <!-- Model Management -->
+                    <section class="settings-section">
+                        <h3>📦 <span data-i18n="settings.models.title">模型管理</span></h3>
+                        <div class="model-management">
+                            <button id="fetch-models-btn" class="btn btn-primary">📥 <span
+                                    data-i18n="settings.models.fetch">获取可用模型列表</span></button>
+                            <div id="available-models" class="available-models hidden">
+                                <div class="model-select-list"></div>
+                            </div>
+                            <div id="monitored-models" class="monitored-models">
+                                <h4 data-i18n="settings.models.monitored">已监控模型</h4>
+                                <div id="monitored-list" class="monitored-list"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Email Notifications -->
+                    <section class="settings-section">
+                        <h3>📧 <span data-i18n="settings.email.title">邮件通知</span></h3>
+                        <div class="toggle-row">
+                            <label class="toggle">
+                                <input type="checkbox" id="smtp-enabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span data-i18n="settings.email.enable">启用邮件通知</span>
+                        </div>
+                        <div id="smtp-settings" class="sub-settings">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="smtp-host" data-i18n="settings.email.host">SMTP 服务器</label>
+                                    <input type="text" id="smtp-host" placeholder="smtp.example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtp-port" data-i18n="settings.email.port">端口</label>
+                                    <input type="number" id="smtp-port" value="587">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="smtp-username" data-i18n="settings.email.username">用户名</label>
+                                    <input type="text" id="smtp-username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="smtp-password" data-i18n="settings.email.password">密码</label>
+                                    <input type="password" id="smtp-password" placeholder="留空保持当前密码">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="smtp-from" data-i18n="settings.email.from">发件人地址</label>
+                                    <input type="email" id="smtp-from" placeholder="alerts@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="admin-email" data-i18n="settings.email.adminEmail">管理员邮箱</label>
+                                    <input type="email" id="admin-email" placeholder="admin@example.com">
+                                </div>
+                            </div>
+                            <div class="toggle-row">
+                                <label class="toggle">
+                                    <input type="checkbox" id="smtp-use-tls" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span data-i18n="settings.email.useTls">使用 TLS</span>
+                            </div>
+                            <button id="test-email-btn" class="btn btn-outline">📤 <span
+                                    data-i18n="settings.email.test">发送测试邮件</span></button>
+                        </div>
+                    </section>
+
+                    <!-- Webhook Notifications -->
+                    <section class="settings-section">
+                        <h3>🔔 <span data-i18n="settings.webhook.title">Webhook 通知（钉钉）</span></h3>
+                        <div class="toggle-row">
+                            <label class="toggle">
+                                <input type="checkbox" id="webhook-enabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span data-i18n="settings.webhook.enable">启用 Webhook 通知</span>
+                        </div>
+                        <div id="webhook-settings" class="sub-settings">
+                            <div class="form-group">
+                                <label for="webhook-url" data-i18n="settings.webhook.url">Webhook 地址</label>
+                                <input type="url" id="webhook-url"
+                                    placeholder="https://oapi.dingtalk.com/robot/send?access_token=...">
+                            </div>
+                            <button id="test-webhook-btn" class="btn btn-outline">📤 <span
+                                    data-i18n="settings.webhook.test">发送测试消息</span></button>
+                        </div>
+                    </section>
+
+                    <!-- Display Settings -->
+                    <section class="settings-section">
+                        <h3>🎨 <span data-i18n="settings.display.title">显示设置</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="site-title" data-i18n="settings.display.siteTitle">站点标题</label>
+                                <input type="text" id="site-title" placeholder="API Health Monitor">
+                            </div>
+                            <div class="form-group">
+                                <label for="logo-url" data-i18n="settings.display.logoUrl">Logo 图片链接</label>
+                                <input type="url" id="logo-url" placeholder="https://example.com/logo.png">
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Test Notification -->
+                    <section class="settings-section">
+                        <h3>🧪 <span data-i18n="settings.test.title">测试通知</span></h3>
+                        <p class="section-desc" data-i18n="settings.test.desc">发送模拟的模型故障告警，用于测试邮件和Webhook是否正常工作。</p>
+                        <button id="test-notification-btn" class="btn btn-warning">🚨 <span
+                                data-i18n="settings.test.send">发送测试告警</span></button>
+                    </section>
+
+                    <!-- Account Settings -->
+                    <section class="settings-section">
+                        <h3>🔐 <span data-i18n="settings.account.title">账号设置</span></h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="current-password" data-i18n="settings.account.currentPassword">当前密码</label>
+                                <input type="password" id="current-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password" data-i18n="settings.account.newPassword">新密码</label>
+                                <input type="password" id="new-password">
+                            </div>
+                        </div>
+                        <button id="change-password-btn" class="btn btn-outline">🔑 <span
+                                data-i18n="settings.account.change">修改密码</span></button>
+                    </section>
+
+                    <!-- Save Button -->
+                    <div class="save-section">
+                        <button id="save-settings-btn" class="btn btn-primary btn-large">💾 <span
+                                data-i18n="settings.save">保存设置</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <div id="tab-logs" class="tab-panel hidden">
+                <div class="panel-header">
+                    <h2 data-i18n="logs.title">调试日志</h2>
+                    <div class="action-buttons">
+                        <label class="toggle-inline">
+                            <input type="checkbox" id="auto-refresh-logs">
+                            <span data-i18n="logs.autoRefresh">自动刷新</span>
+                        </label>
+                        <select id="log-level-filter">
+                            <option value="">所有级别</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                        <button id="clear-logs-btn" class="btn btn-danger btn-small">🗑️ <span
+                                data-i18n="logs.clear">清空日志</span></button>
+                    </div>
+                </div>
+
+                <div id="logs-container" class="logs-container">
+                    <div class="logs-list"></div>
+                </div>
+
+                <div class="logs-pagination">
+                    <button id="prev-page-btn" class="btn btn-small btn-outline" disabled>← 上一页</button>
+                    <span id="page-info">第 1 页</span>
+                    <button id="next-page-btn" class="btn btn-small btn-outline">下一页 →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+
+</html>

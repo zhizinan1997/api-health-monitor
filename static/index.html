@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Health Monitor</title>
+    <link rel="stylesheet" href="/static/css/customer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Language Switch -->
+        <button id="lang-switch" class="lang-switch" onclick="switchLanguage()">中文</button>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <img id="logo" src="" alt="Logo" class="logo hidden">
+                <h1 id="site-title">API Health Monitor</h1>
+            </div>
+            <div class="last-update">
+                <span class="update-label" data-i18n="site.lastUpdated">最后更新：</span>
+                <span id="last-updated">--</span>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p data-i18n="site.loading">正在加载状态...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state hidden">
+            <div class="empty-icon">📊</div>
+            <h2 data-i18n="site.noModels.title">暂无监控模型</h2>
+            <p data-i18n="site.noModels.desc">管理员尚未配置任何需要监控的模型。</p>
+        </div>
+
+        <!-- Model List -->
+        <main id="model-list" class="model-list hidden">
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p id="footer-text">正在监控 <span id="model-count">0</span> 个模型 • 每60秒自动刷新</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/customer.js"></script>
+</body>
+
+</html>

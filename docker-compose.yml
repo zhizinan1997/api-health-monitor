@@ -1,0 +1,19 @@
+services:
+  health-monitor:
+    build: .
+    container_name: api-health-monitor
+    ports:
+      - "2025:2025"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=Asia/Shanghai
+      - DATA_DIR=/app/data
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:2025/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

@@ -1,0 +1,22 @@
+# .gitignore for API Health Monitor project
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+.env
+
+# SQLite database file (generated at runtime)
+health_monitor.db
+
+# Data directory (persisted volume)
+/data/
+
+# Docker files
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
