@@ -134,7 +134,8 @@ mkdir -p ~/api-health-monitor/data && cd ~/api-health-monitor
 docker run -d \
   --name api-health-monitor \
   -p 2025:2025 \
-  -v $(pwd)/data:/app/data \
+  -v "$(pwd)"/data:/app/data \
+  -e TZ=Asia/Shanghai \
   --restart unless-stopped \
   ryanzhi1997/api-health-monitor:latest
 ```
