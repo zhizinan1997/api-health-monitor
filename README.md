@@ -141,7 +141,8 @@ mkdir -p ~/api-health-monitor/data && cd ~/api-health-monitor
 docker run -d \
   --name api-health-monitor \
   -p 2025:2025 \
-  -v $(pwd)/data:/app/data \
+  -v "$(pwd)"/data:/app/data \
+  -e TZ=Asia/Shanghai \
   --restart unless-stopped \
   ryanzhi1997/api-health-monitor:latest
 ```
@@ -153,11 +154,12 @@ New-Item -ItemType Directory -Path "$env:USERPROFILE\api-health-monitor\data" -F
 Set-Location "$env:USERPROFILE\api-health-monitor"
 
 # 2. 拉取并运行容器
-docker run -d `
-  --name api-health-monitor `
-  -p 2025:2025 `
-  -v ${PWD}/data:/app/data `
-  --restart unless-stopped `
+docker run -d \
+  --name api-health-monitor \
+  -p 2025:2025 \
+  -v "$(pwd)"/data:/app/data \
+  -e TZ=Asia/Shanghai \
+  --restart unless-stopped \
   ryanzhi1997/api-health-monitor:latest
 ```
 
