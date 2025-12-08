@@ -1,29 +1,52 @@
 /**
- * Customer Page CSS - ChatGPT Style Dark Theme
- * Clean and modern design inspired by ChatGPT
+ * Customer Page CSS - Gray-White Theme with Dark Mode Support
+ * Clean and modern design with responsive grid layout
  */
 
-/* CSS Variables - ChatGPT Color Palette */
+/* CSS Variables - Light Theme (Default) */
 :root {
-    --bg-main: #343541;
-    --bg-secondary: #444654;
-    --bg-card: #40414f;
-    --bg-hover: #4a4b5a;
-    --bg-sidebar: #202123;
-    --border-color: #4d4d4f;
-    --text-primary: #ececf1;
-    --text-secondary: #c5c5d2;
-    --text-muted: #8e8ea0;
-    --accent-color: #10a37f;
-    --accent-hover: #0d8a6b;
-    --success-color: #10a37f;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --bg-main: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-hover: #f0f0f2;
+    --bg-sidebar: #e8e8ed;
+    --border-color: #d1d1d6;
+    --text-primary: #1d1d1f;
+    --text-secondary: #424245;
+    --text-muted: #86868b;
+    --accent-color: #0071e3;
+    --accent-hover: #0077ed;
+    --success-color: #34c759;
+    --warning-color: #ff9500;
+    --danger-color: #ff3b30;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --transition: all 0.2s ease;
+}
+
+/* Dark Theme - Auto-detect via media query */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-main: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --bg-card: #2c2c2e;
+        --bg-hover: #3a3a3c;
+        --bg-sidebar: #1c1c1e;
+        --border-color: #3a3a3c;
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --text-muted: #8e8e93;
+        --accent-color: #0a84ff;
+        --accent-hover: #409cff;
+        --success-color: #30d158;
+        --warning-color: #ff9f0a;
+        --danger-color: #ff453a;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
 }
 
 /* Base Reset */
@@ -53,9 +76,9 @@ body {
 
 /* Container */
 .container {
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 24px 20px;
+    padding: 24px 32px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -89,8 +112,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px 0;
-    margin-bottom: 32px;
+    padding: 20px 0;
+    margin-bottom: 28px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -108,7 +131,7 @@ body {
 }
 
 .header h1 {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.02em;
@@ -118,9 +141,9 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    background: var(--bg-card);
+    background: var(--bg-secondary);
     padding: 8px 14px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
@@ -192,11 +215,11 @@ body {
     font-size: 1rem;
 }
 
-/* Model List */
+/* Model List - Grid Layout */
 .model-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
     flex: 1;
 }
 
@@ -205,13 +228,15 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 20px;
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
 }
 
 .model-card:hover {
     border-color: var(--accent-color);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-hover);
     transform: translateY(-2px);
 }
 
@@ -220,102 +245,107 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
+    margin-bottom: 16px;
+    gap: 10px;
 }
 
 .model-info {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     flex: 1;
-    min-width: 200px;
+    min-width: 0;
 }
 
 .model-logo {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-sm);
     object-fit: contain;
     flex-shrink: 0;
     background: var(--bg-secondary);
-    padding: 6px;
+    padding: 4px;
 }
 
 .model-name {
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .model-id {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Status Badge */
 .model-status {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 6px;
+    padding: 6px 12px;
     border-radius: 50px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
+    flex-shrink: 0;
 }
 
 .model-status.online {
-    background: rgba(16, 163, 127, 0.15);
+    background: rgba(52, 199, 89, 0.15);
     color: var(--success-color);
 }
 
 .model-status.offline {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(255, 59, 48, 0.15);
     color: var(--danger-color);
 }
 
 .model-status.unknown {
-    background: rgba(142, 142, 160, 0.15);
+    background: rgba(142, 142, 147, 0.15);
     color: var(--text-muted);
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: currentColor;
-    box-shadow: 0 0 8px currentColor;
+    box-shadow: 0 0 6px currentColor;
 }
 
 /* Progress Section */
 .progress-section {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .progress-label {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .progress-bar {
     display: flex;
-    gap: 3px;
-    height: 24px;
+    gap: 2px;
+    height: 20px;
     background: var(--bg-secondary);
     border-radius: var(--radius-sm);
     overflow: hidden;
-    padding: 4px;
+    padding: 3px;
 }
 
 .progress-slot {
     flex: 1;
-    border-radius: 3px;
+    border-radius: 2px;
     cursor: pointer;
     transition: var(--transition);
     position: relative;
@@ -331,7 +361,7 @@ body {
     color: var(--text-primary);
     padding: 6px 10px;
     border-radius: var(--radius-sm);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
@@ -358,33 +388,33 @@ body {
     background: var(--border-color);
 }
 
-/* Stats Row */
+/* Stats Row - Compact 2x2 grid */
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .stat-item {
     background: var(--bg-secondary);
     border-radius: var(--radius-sm);
-    padding: 14px;
+    padding: 10px;
     text-align: center;
     border: 1px solid var(--border-color);
 }
 
 .stat-label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--text-muted);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
 }
 
 .stat-value {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
@@ -406,41 +436,42 @@ body {
 
 /* Error Info */
 .error-info {
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(255, 59, 48, 0.08);
+    border: 1px solid rgba(255, 59, 48, 0.2);
     border-radius: var(--radius-sm);
-    padding: 14px;
-    margin-top: 4px;
+    padding: 12px;
+    margin-top: auto;
 }
 
 .error-title {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--danger-color);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .error-message {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.4;
+    word-break: break-word;
 }
 
 .error-code {
     display: inline-block;
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(255, 59, 48, 0.2);
     color: var(--danger-color);
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 /* Footer */
 .footer {
     margin-top: auto;
-    padding-top: 32px;
+    padding-top: 28px;
     text-align: center;
 }
 
@@ -450,9 +481,24 @@ body {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .model-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .container {
+        padding: 20px 24px;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 16px;
+    }
+
+    .model-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .header {
@@ -462,11 +508,11 @@ body {
     }
 
     .header h1 {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
     }
 
     .stats-row {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .model-card {
@@ -483,29 +529,33 @@ body {
 
 @media (max-width: 480px) {
     .header h1 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 
     .model-info {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
     }
 
     .model-logo {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .stat-item {
-        padding: 10px;
+        padding: 8px;
     }
 
     .stat-value {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .progress-bar {
-        height: 20px;
+        height: 16px;
     }
 }

@@ -159,7 +159,6 @@ function createModelCard(model) {
                     ${model.logo_url ? `<img src="${escapeHtml(model.logo_url)}" class="model-logo" alt="logo" onerror="this.style.display='none'">` : ''}
                     <div>
                         <div class="model-name">${escapeHtml(model.display_name)}</div>
-                        <div class="model-id">${escapeHtml(model.model_name)}</div>
                     </div>
                 </div>
                 <div class="model-status ${statusClass}">

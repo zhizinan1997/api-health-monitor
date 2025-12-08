@@ -15,13 +15,16 @@
 
 | 功能 | 描述 |
 |------|------|
-| � **实时状态监控** | 定时检测模型连通性，展示 24 小时可用率曲线 |
-| 🎨 **ChatGPT 风格 UI** | 深色主题、现代化设计、响应式布局 |
-| � **多渠道告警** | 支持邮件 (SMTP) 和钉钉 Webhook 通知 |
+| 📊 **实时状态监控** | 定时检测模型连通性，展示 24 小时可用率曲线 |
+| 🎨 **响应式网格布局** | 桌面端每行3个模型卡片，自适应平板/手机 |
+| 🌗 **亮暗双主题** | 灰白浅色主题，自动适配系统暗黑模式 |
+| 🔄 **智能重测机制** | 首次失败后等待3分钟重测，避免网络波动误报 |
+| 📧 **多渠道告警** | 支持邮件 (SMTP) 和钉钉 Webhook 通知 |
 | 🌐 **中英双语** | 完整的国际化支持，一键切换语言 |
-| �️ **模型 Logo** | 可为每个模型配置独立的 Logo 图标 |
-| � **调试日志** | 支持日志查看、过滤、清空操作 |
-| � **Docker 部署** | 开箱即用，数据持久化 |
+| 🖼️ **模型 Logo** | 可为每个模型配置独立的 Logo 图标 |
+| 📝 **调试日志** | 支持日志查看、过滤、清空操作 |
+| 🐳 **Docker 部署** | 开箱即用，数据持久化 |
+| ⚙️ **GitHub Actions** | 发布新版本时自动构建多架构镜像 |
 
 ---
 
@@ -45,7 +48,7 @@
 | 技术 | 用途 |
 |------|------|
 | **HTML5** | 页面结构 |
-| **CSS3** | ChatGPT 风格深色主题样式 |
+| **CSS3** | 灰白浅色主题 + 自动暗黑模式适配 |
 | **Vanilla JavaScript** | 无框架，原生 JS 实现交互逻辑 |
 | **Inter 字体** | Google Fonts 现代化字体 |
 
@@ -85,7 +88,7 @@ api-health-monitor/
 │   ├── index.html               # 客户端状态展示页面
 │   ├── admin.html               # 管理后台页面
 │   ├── css/
-│   │   ├── customer.css         # 客户页面样式 (ChatGPT 深色主题)
+│   │   ├── customer.css         # 客户页面样式 (灰白主题+暗黑模式)
 │   │   └── admin.css            # 管理页面样式 (ChatGPT 深色主题)
 │   └── js/
 │       ├── customer.js          # 客户页面交互逻辑
@@ -94,6 +97,10 @@ api-health-monitor/
 │
 ├── data/                         # 数据持久化目录 (Docker 挂载)
 │   └── .gitkeep                 # 保持目录存在
+│
+├── .github/
+│   └── workflows/
+│       └── docker-build.yml     # GitHub Actions 自动构建镜像
 │
 ├── Dockerfile                    # Docker 镜像构建文件
 ├── docker-compose.yml           # Docker Compose 编排配置
@@ -113,7 +120,7 @@ api-health-monitor/
 | `app/auth.py` | 使用 bcrypt 哈希密码，PyJWT 生成/验证 Token |
 | `app/api_client.py` | 封装对 OpenAI 格式 API 的调用，智能处理 URL 后缀 |
 | `app/notifier.py` | 异步发送邮件和钉钉通知，支持静默时间段 (23:00-08:00) |
-| `app/scheduler.py` | 使用 APScheduler 每 N 分钟自动检测所有监控模型 |
+| `app/scheduler.py` | 使用 APScheduler 定时检测，支持失败重测机制（3分钟后重测避免误报） |
 | `static/js/i18n.js` | 国际化翻译字典，支持 `i18n.t('key')` 方式获取文本 |
 
 ---
@@ -279,6 +286,33 @@ services:
     environment:
       - TZ=Asia/Shanghai
 ```
+
+---
+
+## 🔧 GitHub Actions 自动构建
+
+本项目配置了 GitHub Actions 工作流，在发布新版本时自动构建并推送 Docker 镜像。
+
+### 触发条件
+- ✅ **发布新版本时触发** - 在 GitHub 创建 Release 并发布时自动构建
+- ❌ **推送代码不触发** - 普通 push 不会构建镜像
+
+### 配置步骤
+
+1. 在 GitHub 仓库设置中添加 Secrets：
+   - `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
+   - 添加 `DOCKERHUB_USERNAME`：Docker Hub 用户名
+   - 添加 `DOCKERHUB_TOKEN`：Docker Hub 访问令牌
+
+2. 发布新版本：
+   - 在 GitHub 仓库页面点击 `Releases` → `Create a new release`
+   - 创建新标签（如 `v1.0.0`）并发布
+   - Actions 会自动构建并推送镜像
+
+### 构建产物
+- `ryanzhi1997/api-health-monitor:v1.0.0` - 版本标签
+- `ryanzhi1997/api-health-monitor:latest` - 最新版本
+- 支持多架构：`linux/amd64`, `linux/arm64`
 
 ---
 
