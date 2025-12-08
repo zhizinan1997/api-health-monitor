@@ -144,7 +144,7 @@ docker run -d \
   -v "$(pwd)"/data:/app/data \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  ryanzhi1997/api-health-monitor:latest
+  ghcr.io/zhizinan1997/api-health-monitor:latest
 ```
 
 **Windows PowerShell:**
@@ -160,7 +160,7 @@ docker run -d \
   -v "$(pwd)"/data:/app/data \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  ryanzhi1997/api-health-monitor:latest
+  ghcr.io/zhizinan1997/api-health-monitor:latest
 ```
 
 ### 方式二：使用 Docker Compose
@@ -170,7 +170,7 @@ docker run -d \
 version: '3.8'
 services:
   api-health-monitor:
-    image: ryanzhi1997/api-health-monitor:latest
+    image: ghcr.io/zhizinan1997/api-health-monitor:latest
     container_name: api-health-monitor
     ports:
       - "2025:2025"
@@ -293,7 +293,7 @@ services:
 
 ## 🔧 GitHub Actions 自动构建
 
-本项目配置了 GitHub Actions 工作流，在发布新版本时自动构建并推送 Docker 镜像。
+本项目配置了 GitHub Actions 工作流，在发布新版本时自动构建并推送 Docker 镜像到 GitHub Container Registry (GHCR)。
 
 ### 触发条件
 - ✅ **发布新版本时触发** - 在 GitHub 创建 Release 并发布时自动构建
@@ -301,19 +301,16 @@ services:
 
 ### 配置步骤
 
-1. 在 GitHub 仓库设置中添加 Secrets：
-   - `Settings` → `Secrets and variables` → `Actions` → `New repository secret`
-   - 添加 `DOCKERHUB_USERNAME`：Docker Hub 用户名
-   - 添加 `DOCKERHUB_TOKEN`：Docker Hub 访问令牌
+无需额外配置，GitHub 自动提供 `GITHUB_TOKEN` 用于认证。
 
-2. 发布新版本：
-   - 在 GitHub 仓库页面点击 `Releases` → `Create a new release`
-   - 创建新标签（如 `v1.0.0`）并发布
-   - Actions 会自动构建并推送镜像
+发布新版本：
+1. 在 GitHub 仓库页面点击 `Releases` → `Create a new release`
+2. 创建新标签（如 `v1.0.0`）并发布
+3. Actions 会自动构建并推送镜像
 
 ### 构建产物
-- `ryanzhi1997/api-health-monitor:v1.0.0` - 版本标签
-- `ryanzhi1997/api-health-monitor:latest` - 最新版本
+- `ghcr.io/zhizinan1997/api-health-monitor:v1.0.0` - 版本标签
+- `ghcr.io/zhizinan1997/api-health-monitor:latest` - 最新版本
 - 支持多架构：`linux/amd64`, `linux/arm64`
 
 ---
@@ -337,9 +334,10 @@ mkdir -p ~/api-health-monitor/data && cd ~/api-health-monitor
 docker run -d \
   --name api-health-monitor \
   -p 2025:2025 \
-  -v $(pwd)/data:/app/data \
+  -v "$(pwd)"/data:/app/data \
+  -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  ryanzhi1997/api-health-monitor:latest
+  ghcr.io/zhizinan1997/api-health-monitor:latest
 ```
 
 - **Status Page**: http://localhost:2025/
