@@ -1,7 +1,7 @@
 """
 Model management routes
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -153,20 +153,24 @@ async def toggle_model(
 
 @router.put("/reorder")
 async def reorder_models(
-    order: List[int],
+    order: List[int] = Body(...),
     admin: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
     """Update model display order"""
+    log_debug("INFO", "models", f"Received reorder request: {order}")
+    
     for index, model_id in enumerate(order):
         model = db.query(MonitoredModel).filter(MonitoredModel.id == model_id).first()
         if model:
             model.sort_order = index
+            log_debug("DEBUG", "models", f"Set model {model_id} sort_order to {index}")
     
     db.commit()
-    log_debug("INFO", "models", f"Updated model order: {order}")
+    log_debug("INFO", "models", f"Successfully updated model order: {order}")
     
     # Return updated list
     models = db.query(MonitoredModel).order_by(MonitoredModel.sort_order).all()
     return models
+
 

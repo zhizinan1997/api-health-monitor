@@ -760,7 +760,23 @@ async function loadModelStatus() {
 
         list.innerHTML = stats.map(model => {
             const rate = model.rate_1d;
-            const isOnline = rate !== null ? rate >= 95 : null;
+
+            // Check the most recent hourly status slot for current status
+            const lastStatus = model.hourly_status && model.hourly_status.length > 0
+                ? model.hourly_status[model.hourly_status.length - 1]
+                : null;
+
+            // Model is online if the most recent test was successful
+            let isOnline = null;
+            if (lastStatus && lastStatus.success === true) {
+                isOnline = true;
+            } else if (lastStatus && lastStatus.success === false) {
+                isOnline = false;
+            } else if (rate !== null) {
+                // No recent test, fall back to rate check
+                isOnline = rate >= 95;
+            }
+
             const statusClass = isOnline === null ? 'unknown' : (isOnline ? 'online' : 'offline');
 
             return `
