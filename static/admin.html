@@ -118,9 +118,22 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="test-interval" data-i18n="settings.api.interval">测试间隔（分钟）</label>
+                            <label for="test-interval">测试间隔（分钟）</label>
                             <input type="number" id="test-interval" min="5" max="1440" value="60">
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="test-start-hour">起始时间 - 小时（0-23）</label>
+                                <input type="number" id="test-start-hour" min="0" max="23" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="test-start-minute">起始时间 - 分钟（0-59）</label>
+                                <input type="number" id="test-start-minute" min="0" max="59" value="0">
+                            </div>
+                        </div>
+                        <p class="section-desc" style="font-size: 0.85rem; color: var(--text-muted); margin-top: -8px;">
+                            系统将在每天的起始时间开始，按照设定的间隔执行测试。例如：起始时间00:00，间隔60分钟，则在00:00、01:00、02:00...执行测试
+                        </p>
                     </section>
 
                     <!-- Model Management -->
@@ -192,6 +205,12 @@
                             </div>
                             <button id="test-email-btn" class="btn btn-outline">📤 <span
                                     data-i18n="settings.email.test">发送测试邮件</span></button>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <label for="custom-notification">自定义通知附加内容</label>
+                                <textarea id="custom-notification" rows="3" placeholder="此内容将附加到所有告警通知中，可用于添加联系方式、处理流程等"
+                                    style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit;"></textarea>
+                                <small class="form-hint">支持纯文本，Webhook支持Markdown格式</small>
+                            </div>
                         </div>
                     </section>
 

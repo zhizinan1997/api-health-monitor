@@ -56,6 +56,8 @@ async def get_settings(
         api_base_url=settings.api_base_url or "",
         api_key_masked=api_key_masked,
         test_interval_minutes=settings.test_interval_minutes,
+        test_start_hour=settings.test_start_hour,
+        test_start_minute=settings.test_start_minute,
         smtp_enabled=settings.smtp_enabled,
         smtp_host=settings.smtp_host or "",
         smtp_port=settings.smtp_port,
@@ -66,6 +68,7 @@ async def get_settings(
         admin_email=settings.admin_email or "",
         webhook_enabled=settings.webhook_enabled,
         webhook_url=settings.webhook_url or "",
+        custom_notification_text=settings.custom_notification_text or "",
         logo_url=settings.logo_url or "",
         site_title=settings.site_title or "API Health Monitor"
     )

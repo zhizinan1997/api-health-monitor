@@ -329,6 +329,8 @@ async function loadSettings() {
         document.getElementById('api-base-url').value = settings.api_base_url || '';
         document.getElementById('api-key').placeholder = settings.api_key_masked || 'sk-...';
         document.getElementById('test-interval').value = settings.test_interval_minutes;
+        document.getElementById('test-start-hour').value = settings.test_start_hour || 0;
+        document.getElementById('test-start-minute').value = settings.test_start_minute || 0;
 
         document.getElementById('smtp-enabled').checked = settings.smtp_enabled;
         document.getElementById('smtp-host').value = settings.smtp_host || '';
@@ -342,6 +344,8 @@ async function loadSettings() {
         document.getElementById('webhook-enabled').checked = settings.webhook_enabled;
         document.getElementById('webhook-url').value = settings.webhook_url || '';
         document.getElementById('webhook-settings').style.display = settings.webhook_enabled ? 'block' : 'none';
+
+        document.getElementById('custom-notification').value = settings.custom_notification_text || '';
 
         document.getElementById('site-title').value = settings.site_title || '';
         document.getElementById('logo-url').value = settings.logo_url || '';
@@ -357,8 +361,8 @@ async function loadSettings() {
  */
 function setupAutoSave() {
     const sections = {
-        api: ['api-base-url', 'api-key', 'test-interval'],
-        email: ['smtp-enabled', 'smtp-host', 'smtp-port', 'smtp-username', 'smtp-password', 'smtp-from', 'admin-email', 'smtp-use-tls'],
+        api: ['api-base-url', 'api-key', 'test-interval', 'test-start-hour', 'test-start-minute'],
+        email: ['smtp-enabled', 'smtp-host', 'smtp-port', 'smtp-username', 'smtp-password', 'smtp-from', 'admin-email', 'smtp-use-tls', 'custom-notification'],
         webhook: ['webhook-enabled', 'webhook-url'],
         display: ['site-title', 'logo-url']
     };
@@ -433,6 +437,8 @@ async function autoSaveSettings(section) {
     const settings = {
         api_base_url: document.getElementById('api-base-url').value,
         test_interval_minutes: parseInt(document.getElementById('test-interval').value) || 60,
+        test_start_hour: parseInt(document.getElementById('test-start-hour').value) || 0,
+        test_start_minute: parseInt(document.getElementById('test-start-minute').value) || 0,
 
         smtp_enabled: document.getElementById('smtp-enabled').checked,
         smtp_host: document.getElementById('smtp-host').value,
@@ -444,6 +450,8 @@ async function autoSaveSettings(section) {
 
         webhook_enabled: document.getElementById('webhook-enabled').checked,
         webhook_url: document.getElementById('webhook-url').value,
+
+        custom_notification_text: document.getElementById('custom-notification').value,
 
         site_title: document.getElementById('site-title').value,
         logo_url: document.getElementById('logo-url').value
