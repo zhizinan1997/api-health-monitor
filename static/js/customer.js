@@ -144,7 +144,22 @@ function renderModelList() {
  * Create a model card HTML
  */
 function createModelCard(model) {
-    const isOnline = model.rate_1d !== null ? model.rate_1d >= 95 : null;
+    // Check the most recent hourly status slot for current status
+    const lastStatus = model.hourly_status && model.hourly_status.length > 0
+        ? model.hourly_status[model.hourly_status.length - 1]
+        : null;
+
+    // Model is online if the most recent test was successful
+    let isOnline = null;
+    if (lastStatus && lastStatus.success === true) {
+        isOnline = true;
+    } else if (lastStatus && lastStatus.success === false) {
+        isOnline = false;
+    } else if (model.rate_1d !== null) {
+        // No recent test, fall back to rate check
+        isOnline = model.rate_1d >= 95;
+    }
+
     const statusClass = isOnline === null ? 'unknown' : (isOnline ? 'online' : 'offline');
     const statusText = isOnline === null ? i18n.t('status.noData') : (isOnline ? i18n.t('status.online') : i18n.t('status.offline'));
 
@@ -234,8 +249,13 @@ function createStatsRow(model) {
  * Create error info section
  */
 function createErrorInfo(model) {
-    // Only show error if model is currently offline (rate < 95%)
-    const isOnline = model.rate_1d !== null && model.rate_1d >= 95;
+    // Check the most recent hourly status slot for current status
+    const lastStatus = model.hourly_status && model.hourly_status.length > 0
+        ? model.hourly_status[model.hourly_status.length - 1]
+        : null;
+
+    // Model is online if the most recent test was successful
+    const isOnline = lastStatus && lastStatus.success === true;
 
     // Don't show error if model is currently online or has no error
     if (isOnline || (!model.last_error_code && !model.last_error_message)) {

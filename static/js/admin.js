@@ -889,8 +889,7 @@ async function testAllModels() {
         progressFill.style.width = '100%';
         showToast(`测试完成: ${passed}/${total} 通过`, passed === total ? 'success' : 'warning');
 
-        // Reload full status after all tests complete
-        setTimeout(() => loadModelStatus(), 500);
+        // Don't reload status - keep the updated results visible
 
     } catch (error) {
         showToast('测试失败，请重试', 'error');
