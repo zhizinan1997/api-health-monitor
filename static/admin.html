@@ -102,8 +102,9 @@
             <div id="tab-settings" class="tab-panel hidden">
                 <div class="settings-sections">
                     <!-- API Configuration -->
-                    <section class="settings-section">
+                    <section class="settings-section" data-section="api">
                         <h3>🔗 <span data-i18n="settings.api.title">API 配置</span></h3>
+                        <div class="save-status" id="save-status-api"></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="api-base-url" data-i18n="settings.api.baseUrl">API 地址</label>
@@ -121,8 +122,9 @@
                     </section>
 
                     <!-- Model Management -->
-                    <section class="settings-section">
+                    <section class="settings-section" data-section="models">
                         <h3>📦 <span data-i18n="settings.models.title">模型管理</span></h3>
+                        <div class="save-status" id="save-status-models"></div>
                         <div class="model-management">
                             <button id="fetch-models-btn" class="btn btn-primary">📥 <span
                                     data-i18n="settings.models.fetch">获取可用模型列表</span></button>
@@ -137,8 +139,9 @@
                     </section>
 
                     <!-- Email Notifications -->
-                    <section class="settings-section">
+                    <section class="settings-section" data-section="email">
                         <h3>📧 <span data-i18n="settings.email.title">邮件通知</span></h3>
+                        <div class="save-status" id="save-status-email"></div>
                         <div class="toggle-row">
                             <label class="toggle">
                                 <input type="checkbox" id="smtp-enabled">
@@ -190,8 +193,9 @@
                     </section>
 
                     <!-- Webhook Notifications -->
-                    <section class="settings-section">
+                    <section class="settings-section" data-section="webhook">
                         <h3>🔔 <span data-i18n="settings.webhook.title">Webhook 通知（钉钉）</span></h3>
+                        <div class="save-status" id="save-status-webhook"></div>
                         <div class="toggle-row">
                             <label class="toggle">
                                 <input type="checkbox" id="webhook-enabled">
@@ -211,8 +215,9 @@
                     </section>
 
                     <!-- Display Settings -->
-                    <section class="settings-section">
+                    <section class="settings-section" data-section="display">
                         <h3>🎨 <span data-i18n="settings.display.title">显示设置</span></h3>
+                        <div class="save-status" id="save-status-display"></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="site-title" data-i18n="settings.display.siteTitle">站点标题</label>
@@ -249,12 +254,6 @@
                         <button id="change-password-btn" class="btn btn-outline">🔑 <span
                                 data-i18n="settings.account.change">修改密码</span></button>
                     </section>
-
-                    <!-- Save Button -->
-                    <div class="save-section">
-                        <button id="save-settings-btn" class="btn btn-primary btn-large">💾 <span
-                                data-i18n="settings.save">保存设置</span></button>
-                    </div>
                 </div>
             </div>
 

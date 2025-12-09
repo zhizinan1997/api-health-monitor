@@ -12,6 +12,8 @@ let isSetupMode = false;
 let currentPage = 1;
 let autoRefreshLogs = false;
 let logsInterval = null;
+let autoSaveTimers = {};
+let saveTimestamps = {};
 
 // DOM Elements
 const authPage = document.getElementById('auth-page');
@@ -180,11 +182,13 @@ function setupEventListeners() {
 
     // Settings tab
     document.getElementById('fetch-models-btn').addEventListener('click', fetchAvailableModels);
-    document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
     document.getElementById('test-email-btn').addEventListener('click', testEmail);
     document.getElementById('test-webhook-btn').addEventListener('click', testWebhook);
     document.getElementById('test-notification-btn').addEventListener('click', testNotification);
     document.getElementById('change-password-btn').addEventListener('click', changePassword);
+
+    // Setup auto-save for settings
+    setupAutoSave();
 
     // Toggle visibility for sub-settings
     document.getElementById('smtp-enabled').addEventListener('change', (e) => {
@@ -349,7 +353,141 @@ async function loadSettings() {
 }
 
 /**
- * Save settings
+ * Setup auto-save for all settings fields
+ */
+function setupAutoSave() {
+    const sections = {
+        api: ['api-base-url', 'api-key', 'test-interval'],
+        email: ['smtp-enabled', 'smtp-host', 'smtp-port', 'smtp-username', 'smtp-password', 'smtp-from', 'admin-email', 'smtp-use-tls'],
+        webhook: ['webhook-enabled', 'webhook-url'],
+        display: ['site-title', 'logo-url']
+    };
+
+    for (const [section, fields] of Object.entries(sections)) {
+        fields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (!element) return;
+
+            const eventType = element.type === 'checkbox' ? 'change' : 'input';
+            element.addEventListener(eventType, () => {
+                debouncedAutoSave(section);
+            });
+        });
+    }
+}
+
+/**
+ * Debounced auto-save with 500ms delay
+ */
+function debouncedAutoSave(section) {
+    // Clear existing timer for this section
+    if (autoSaveTimers[section]) {
+        clearTimeout(autoSaveTimers[section]);
+    }
+
+    // Show saving status
+    updateSaveStatus(section, 'saving');
+
+    // Set new timer
+    autoSaveTimers[section] = setTimeout(async () => {
+        await autoSaveSettings(section);
+    }, 500);
+}
+
+/**
+ * Update save status indicator
+ */
+function updateSaveStatus(section, status) {
+    const statusEl = document.getElementById(`save-status-${section}`);
+    if (!statusEl) return;
+
+    const now = Date.now();
+
+    switch (status) {
+        case 'saving':
+            statusEl.className = 'save-status saving';
+            statusEl.innerHTML = '<span class="spinner-tiny"></span> ' + (i18n.t('settings.saving') || '保存中...');
+            break;
+        case 'saved':
+            saveTimestamps[section] = now;
+            statusEl.className = 'save-status saved';
+            statusEl.textContent = '✓ ' + (i18n.t('settings.saved') || '已保存');
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                if (saveTimestamps[section] === now) {
+                    statusEl.textContent = '';
+                }
+            }, 3000);
+            break;
+        case 'error':
+            statusEl.className = 'save-status error';
+            statusEl.textContent = '✗ ' + (i18n.t('settings.saveFailed') || '保存失败');
+            break;
+    }
+}
+
+/**
+ * Auto-save settings (silent, no toast)
+ */
+async function autoSaveSettings(section) {
+    const settings = {
+        api_base_url: document.getElementById('api-base-url').value,
+        test_interval_minutes: parseInt(document.getElementById('test-interval').value) || 60,
+
+        smtp_enabled: document.getElementById('smtp-enabled').checked,
+        smtp_host: document.getElementById('smtp-host').value,
+        smtp_port: parseInt(document.getElementById('smtp-port').value) || 587,
+        smtp_username: document.getElementById('smtp-username').value,
+        smtp_from: document.getElementById('smtp-from').value,
+        smtp_use_tls: document.getElementById('smtp-use-tls').checked,
+        admin_email: document.getElementById('admin-email').value,
+
+        webhook_enabled: document.getElementById('webhook-enabled').checked,
+        webhook_url: document.getElementById('webhook-url').value,
+
+        site_title: document.getElementById('site-title').value,
+        logo_url: document.getElementById('logo-url').value
+    };
+
+    // Only include API key if changed
+    const apiKey = document.getElementById('api-key').value;
+    if (apiKey) {
+        settings.api_key = apiKey;
+    }
+
+    // Only include SMTP password if changed
+    const smtpPassword = document.getElementById('smtp-password').value;
+    if (smtpPassword) {
+        settings.smtp_password = smtpPassword;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/settings`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+            updateSaveStatus(section, 'saved');
+            // Clear password fields after successful save
+            if (apiKey) document.getElementById('api-key').value = '';
+            if (smtpPassword) document.getElementById('smtp-password').value = '';
+            // Reload settings to get updated masked values
+            loadSettings();
+        } else {
+            updateSaveStatus(section, 'error');
+        }
+    } catch (error) {
+        updateSaveStatus(section, 'error');
+    }
+}
+
+/**
+ * Save settings (keep for password change and test buttons)
  */
 async function saveSettings() {
     const settings = {
@@ -671,34 +809,117 @@ async function testSingleModel(id, name) {
 }
 
 /**
- * Test all models
+ * Test all models (sequential with real-time feedback)
  */
 async function testAllModels() {
     const btn = document.getElementById('test-all-btn');
     const progress = document.getElementById('test-progress');
+    const progressText = progress.querySelector('.progress-text');
+    const progressFill = progress.querySelector('.progress-fill');
 
     btn.disabled = true;
     progress.classList.remove('hidden');
 
     try {
-        const response = await fetch(`${API_BASE}/api/tests/run-all`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        // Get all enabled models
+        const response = await fetch(`${API_BASE}/api/models`);
+        const models = await response.json();
+        const enabledModels = models.filter(m => m.enabled !== false);
 
-        if (response.ok) {
-            const results = await response.json();
-            const passed = results.filter(r => r.success).length;
-            showToast(i18n.t('msg.testComplete', { passed, total: results.length }), passed === results.length ? 'success' : 'warning');
-            loadModelStatus();
-        } else {
-            showToast(i18n.t('msg.connectionFailed'), 'error');
+        if (enabledModels.length === 0) {
+            showToast(i18n.t('msg.noModelsToTest') || '没有模型可测试', 'warning');
+            return;
         }
+
+        let completed = 0;
+        let passed = 0;
+
+        // Test models one by one
+        for (const model of enabledModels) {
+            progressText.textContent = i18n.t('msg.testingProgress', { current: completed + 1, total: enabledModels.length }) || `正在测试 ${completed + 1}/${enabledModels.length}...`;
+            progressFill.style.width = `${(completed / enabledModels.length) * 100}%`;
+
+            try {
+                const testResponse = await fetch(`${API_BASE}/api/tests/run/${model.id}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (testResponse.ok) {
+                    const result = await testResponse.json();
+                    if (result.success) {
+                        passed++;
+                    }
+
+                    // Update status immediately after each test
+                    await updateModelStatusInList(model.id, result.success, result.error_message);
+                }
+            } catch (error) {
+                console.error(`Failed to test model ${model.display_name}:`, error);
+            }
+
+            completed++;
+        }
+
+        // Show final results
+        progressFill.style.width = '100%';
+        showToast(i18n.t('msg.testComplete', { passed, total: enabledModels.length }) || `测试完成: ${passed}/${enabledModels.length} 通过`, passed === enabledModels.length ? 'success' : 'warning');
+
+        // Reload full status after all tests complete
+        setTimeout(() => loadModelStatus(), 500);
+
     } catch (error) {
         showToast(i18n.t('msg.connectionFailed'), 'error');
     } finally {
         btn.disabled = false;
-        progress.classList.add('hidden');
+        setTimeout(() => progress.classList.add('hidden'), 1000);
+    }
+}
+
+/**
+ * Update a single model's status in the list
+ */
+async function updateModelStatusInList(modelId, success, errorMessage) {
+    // Find the model status item in the DOM
+    const statusList = document.getElementById('model-status-list');
+    if (!statusList) return;
+
+    const items = statusList.querySelectorAll('.model-status-item');
+    for (const item of items) {
+        const testBtn = item.querySelector(`button[onclick*="testSingleModel(${modelId}"]`);
+        if (testBtn) {
+            // Update the status indicator
+            const indicator = item.querySelector('.status-indicator');
+            if (indicator) {
+                indicator.className = `status-indicator ${success ? 'online' : 'offline'}`;
+            }
+
+            // Add a temporary status badge
+            let statusBadge = item.querySelector('.test-status-badge');
+            if (!statusBadge) {
+                statusBadge = document.createElement('span');
+                statusBadge.className = 'test-status-badge';
+                statusBadge.style.cssText = 'margin-left: 8px; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;';
+                item.querySelector('.model-status-info').appendChild(statusBadge);
+            }
+
+            if (success) {
+                statusBadge.style.cssText += 'background: rgba(52, 199, 89, 0.15); color: var(--success-color);';
+                statusBadge.textContent = '✓ ' + (i18n.t('msg.testPassed') || '已通过');
+            } else {
+                statusBadge.style.cssText += 'background: rgba(255, 59, 48, 0.15); color: var(--danger-color);';
+                statusBadge.textContent = '✗ ' + (i18n.t('msg.testFailed') || '失败');
+            }
+
+            // Remove badge after 3 seconds
+            setTimeout(() => {
+                if (statusBadge && statusBadge.parentNode) {
+                    statusBadge.remove();
+                }
+            }, 3000);
+
+            break;
+        }
     }
 }
 

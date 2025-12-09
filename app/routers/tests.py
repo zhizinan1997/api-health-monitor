@@ -167,11 +167,17 @@ async def get_model_stats(db: Session = Depends(get_db)):
         rate_7d = _calculate_rate(db, model.id, now, days=7)
         rate_30d = _calculate_rate(db, model.id, now, days=30)
         
-        # Get last error
-        last_error = db.query(TestResult).filter(
-            TestResult.model_id == model.id,
-            TestResult.success == False
+        # Get last test result (not last error, but most recent test)
+        last_test = db.query(TestResult).filter(
+            TestResult.model_id == model.id
         ).order_by(TestResult.tested_at.desc()).first()
+        
+        # Only show error if the most recent test failed
+        last_error_code = None
+        last_error_message = None
+        if last_test and not last_test.success:
+            last_error_code = last_test.error_code
+            last_error_message = last_test.error_message
         
         stats.append(ModelStats(
             model_id=model.id,
@@ -183,8 +189,8 @@ async def get_model_stats(db: Session = Depends(get_db)):
             rate_3d=rate_3d,
             rate_7d=rate_7d,
             rate_30d=rate_30d,
-            last_error_code=last_error.error_code if last_error else None,
-            last_error_message=last_error.error_message if last_error else None
+            last_error_code=last_error_code,
+            last_error_message=last_error_message
         ))
     
     return stats

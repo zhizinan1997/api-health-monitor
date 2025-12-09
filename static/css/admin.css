@@ -1,32 +1,56 @@
 /**
- * Admin Page CSS - ChatGPT Style Dark Theme
- * Clean and modern design inspired by ChatGPT
+ * Admin Page CSS - Gray-White Theme with Dark Mode Support
+ * Consistent with customer page design
  */
 
-/* CSS Variables - ChatGPT Color Palette */
+/* CSS Variables - Light Theme (Default) */
 :root {
-    --bg-main: #343541;
-    --bg-secondary: #444654;
-    --bg-card: #40414f;
-    --bg-hover: #4a4b5a;
-    --bg-sidebar: #202123;
-    --bg-input: #3a3b44;
-    --border-color: #4d4d4f;
-    --border-focus: #10a37f;
-    --text-primary: #ececf1;
-    --text-secondary: #c5c5d2;
-    --text-muted: #8e8ea0;
-    --accent-color: #10a37f;
-    --accent-hover: #0d8a6b;
-    --accent-gradient: linear-gradient(135deg, #10a37f 0%, #0d8a6b 100%);
-    --success-color: #10a37f;
-    --warning-color: #f59e0b;
-    --danger-color: #ef4444;
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --bg-main: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-hover: #f0f0f2;
+    --bg-sidebar: #e8e8ed;
+    --bg-input: #ffffff;
+    --border-color: #d1d1d6;
+    --border-focus: #0071e3;
+    --text-primary: #1d1d1f;
+    --text-secondary: #424245;
+    --text-muted: #86868b;
+    --accent-color: #0071e3;
+    --accent-hover: #0077ed;
+    --success-color: #34c759;
+    --warning-color: #ff9500;
+    --danger-color: #ff3b30;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --transition: all 0.2s ease;
+}
+
+/* Dark Theme - Auto-detect via media query */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-main: #1c1c1e;
+        --bg-secondary: #2c2c2e;
+        --bg-card: #2c2c2e;
+        --bg-hover: #3a3a3c;
+        --bg-sidebar: #1c1c1e;
+        --bg-input: #2c2c2e;
+        --border-color: #3a3a3c;
+        --border-focus: #0a84ff;
+        --text-primary: #f5f5f7;
+        --text-secondary: #a1a1a6;
+        --text-muted: #8e8e93;
+        --accent-color: #0a84ff;
+        --accent-hover: #409cff;
+        --success-color: #30d158;
+        --warning-color: #ff9f0a;
+        --danger-color: #ff453a;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
 }
 
 /* Base Reset */
@@ -43,6 +67,7 @@ body {
     min-height: 100vh;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .hidden {
@@ -74,6 +99,7 @@ body {
 .lang-switch:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
+    border-color: var(--accent-color);
 }
 
 /* Auth Page */
@@ -83,7 +109,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: var(--bg-sidebar);
+    background: var(--bg-main);
 }
 
 .auth-card {
@@ -147,7 +173,14 @@ body {
 .form-group select:focus {
     outline: none;
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+    .form-group input:focus,
+    .form-group select:focus {
+        box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+    }
 }
 
 .form-group input::placeholder {
@@ -190,6 +223,7 @@ body {
 .btn-primary:hover {
     background: var(--accent-hover);
     transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .btn-outline {
@@ -210,6 +244,7 @@ body {
 
 .btn-danger:hover {
     background: #dc2626;
+    transform: translateY(-1px);
 }
 
 .btn-warning {
@@ -246,10 +281,10 @@ body {
 .error-message {
     color: var(--danger-color);
     font-size: 0.875rem;
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(255, 59, 48, 0.1);
     padding: 12px 16px;
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(255, 59, 48, 0.2);
 }
 
 /* Admin Dashboard */
@@ -260,7 +295,7 @@ body {
 
 /* Admin Header */
 .admin-header {
-    background: var(--bg-sidebar);
+    background: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
     padding: 16px 24px;
     display: flex;
@@ -269,6 +304,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: var(--shadow);
 }
 
 .header-left h1 {
@@ -388,7 +424,8 @@ body {
 
 .model-status-item:hover {
     border-color: var(--accent-color);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
 }
 
 .model-status-info {
@@ -408,12 +445,12 @@ body {
 
 .status-indicator.online {
     background: var(--success-color);
-    box-shadow: 0 0 8px rgba(16, 163, 127, 0.5);
+    box-shadow: 0 0 8px var(--success-color);
 }
 
 .status-indicator.offline {
     background: var(--danger-color);
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 8px var(--danger-color);
 }
 
 .status-indicator.unknown {
@@ -429,7 +466,7 @@ body {
 .model-status-id {
     font-size: 0.8rem;
     color: var(--text-muted);
-    font-family: monospace;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
 .model-status-actions {
@@ -449,6 +486,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 24px;
+    position: relative;
 }
 
 .settings-section h3 {
@@ -458,6 +496,39 @@ body {
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-primary);
+}
+
+/* Save Status Indicator */
+.save-status {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.save-status.saving {
+    color: var(--warning-color);
+}
+
+.save-status.saved {
+    color: var(--success-color);
+}
+
+.save-status.error {
+    color: var(--danger-color);
+}
+
+.save-status .spinner-tiny {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--warning-color);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
 }
 
 /* Toggle Switch */
@@ -488,7 +559,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--bg-hover);
+    background: var(--border-color);
     border-radius: 26px;
     transition: var(--transition);
 }
@@ -559,6 +630,12 @@ body {
     border-radius: var(--radius-sm);
     gap: 12px;
     flex-wrap: wrap;
+    transition: var(--transition);
+}
+
+.model-select-item:hover,
+.monitored-item:hover {
+    border-color: var(--accent-color);
 }
 
 .model-select-item span {
@@ -628,14 +705,7 @@ body {
 .monitored-item-id {
     font-size: 0.75rem;
     color: var(--text-muted);
-    font-family: monospace;
-}
-
-/* Save Section */
-.save-section {
-    padding-top: 24px;
-    border-top: 1px solid var(--border-color);
-    text-align: center;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
 /* Logs */
@@ -679,17 +749,17 @@ body {
 }
 
 .log-level.INFO {
-    background: rgba(16, 163, 127, 0.15);
+    background: rgba(52, 199, 89, 0.15);
     color: var(--success-color);
 }
 
 .log-level.WARNING {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(255, 149, 0, 0.15);
     color: var(--warning-color);
 }
 
 .log-level.ERROR {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(255, 59, 48, 0.15);
     color: var(--danger-color);
 }
 
@@ -767,21 +837,7 @@ body {
 .progress-fill {
     height: 100%;
     background: var(--accent-color);
-    animation: progress 2s ease-in-out infinite;
-}
-
-@keyframes progress {
-    0% {
-        width: 0%;
-    }
-
-    50% {
-        width: 100%;
-    }
-
-    100% {
-        width: 0%;
-    }
+    transition: width 0.3s ease;
 }
 
 .progress-text {
@@ -872,5 +928,10 @@ body {
 
     .model-status-item {
         padding: 16px;
+    }
+    
+    .save-status {
+        position: static;
+        margin-bottom: 12px;
     }
 }
