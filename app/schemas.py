@@ -45,6 +45,8 @@ class SettingsUpdate(BaseModel):
     api_base_url: Optional[str] = None
     api_key: Optional[str] = None
     test_interval_minutes: Optional[int] = Field(None, ge=5, le=1440)
+    test_start_hour: Optional[int] = Field(None, ge=0, le=23)
+    test_start_minute: Optional[int] = Field(None, ge=0, le=59)
     
     smtp_enabled: Optional[bool] = None
     smtp_host: Optional[str] = None
@@ -58,6 +60,8 @@ class SettingsUpdate(BaseModel):
     webhook_enabled: Optional[bool] = None
     webhook_url: Optional[str] = None
     
+    custom_notification_text: Optional[str] = None
+    
     logo_url: Optional[str] = None
     site_title: Optional[str] = None
 
@@ -67,6 +71,8 @@ class SettingsResponse(BaseModel):
     api_base_url: str
     api_key_masked: str  # Show only last 4 chars
     test_interval_minutes: int
+    test_start_hour: int
+    test_start_minute: int
     
     smtp_enabled: bool
     smtp_host: str
@@ -79,6 +85,8 @@ class SettingsResponse(BaseModel):
     
     webhook_enabled: bool
     webhook_url: str
+    
+    custom_notification_text: str
     
     logo_url: str
     site_title: str

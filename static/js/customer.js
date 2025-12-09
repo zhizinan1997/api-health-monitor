@@ -234,7 +234,11 @@ function createStatsRow(model) {
  * Create error info section
  */
 function createErrorInfo(model) {
-    if (!model.last_error_code && !model.last_error_message) {
+    // Only show error if model is currently offline (rate < 95%)
+    const isOnline = model.rate_1d !== null && model.rate_1d >= 95;
+
+    // Don't show error if model is currently online or has no error
+    if (isOnline || (!model.last_error_code && !model.last_error_message)) {
         return '';
     }
 

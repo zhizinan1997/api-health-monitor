@@ -108,11 +108,13 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="api-base-url" data-i18n="settings.api.baseUrl">API 地址</label>
-                                <input type="url" id="api-base-url" placeholder="https://api.example.com">
+                                <input type="url" id="api-base-url" autocomplete="off" data-lpignore="true"
+                                    placeholder="https://api.example.com">
                             </div>
                             <div class="form-group">
                                 <label for="api-key" data-i18n="settings.api.key">API 密钥</label>
-                                <input type="password" id="api-key" placeholder="sk-...">
+                                <input type="password" id="api-key" autocomplete="new-password" data-lpignore="true"
+                                    placeholder="sk-...">
                             </div>
                         </div>
                         <div class="form-group">
@@ -167,7 +169,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="smtp-password" data-i18n="settings.email.password">密码</label>
-                                    <input type="password" id="smtp-password" placeholder="留空保持当前密码">
+                                    <input type="password" id="smtp-password" autocomplete="new-password"
+                                        data-lpignore="true" placeholder="留空保持当前密码">
                                 </div>
                             </div>
                             <div class="form-row">
@@ -206,7 +209,7 @@
                         <div id="webhook-settings" class="sub-settings">
                             <div class="form-group">
                                 <label for="webhook-url" data-i18n="settings.webhook.url">Webhook 地址</label>
-                                <input type="url" id="webhook-url"
+                                <input type="url" id="webhook-url" autocomplete="off" data-lpignore="true"
                                     placeholder="https://oapi.dingtalk.com/robot/send?access_token=...">
                             </div>
                             <button id="test-webhook-btn" class="btn btn-outline">📤 <span

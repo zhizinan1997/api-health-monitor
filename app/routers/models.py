@@ -11,6 +11,7 @@ from app.schemas import ModelCreate, ModelUpdate, ModelResponse, AvailableModel
 from app.auth import get_current_admin
 from app.api_client import get_available_models
 from app.logger import log_debug
+from app.logo_mapper import get_logo_url
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
@@ -51,7 +52,7 @@ async def fetch_available_models(
 @router.get("", response_model=List[ModelResponse])
 async def list_monitored_models(db: Session = Depends(get_db)):
     """Get list of monitored models (public endpoint)"""
-    models = db.query(MonitoredModel).all()
+    models = db.query(MonitoredModel).order_by(MonitoredModel.sort_order).all()
     return models
 
 
@@ -67,17 +68,24 @@ async def add_model(
     if existing:
         raise HTTPException(status_code=400, detail="Model is already being monitored")
     
+    # Auto-assign logo if not provided
+    logo_url = data.logo_url if data.logo_url else get_logo_url(data.model_id, data.display_name)
+    
+    # Get max sort_order for new model
+    max_order = db.query(MonitoredModel).count()
+    
     model = MonitoredModel(
         model_id=data.model_id,
         display_name=data.display_name,
-        logo_url=data.logo_url or "",
-        enabled=True
+        logo_url=logo_url,
+        enabled=True,
+        sort_order=max_order
     )
     db.add(model)
     db.commit()
     db.refresh(model)
     
-    log_debug("INFO", "models", f"添加模型监控: {data.model_id}")
+    log_debug("INFO", "models", f"添加模型监控: {data.model_id}, logo: {logo_url}")
     return model
 
 
@@ -141,3 +149,24 @@ async def toggle_model(
     status = "enabled" if model.enabled else "disabled"
     log_debug("INFO", "models", f"Model {model.model_id} {status}")
     return {"message": f"Model {status}", "enabled": model.enabled}
+
+
+@router.put("/reorder")
+async def reorder_models(
+    order: List[int],
+    admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Update model display order"""
+    for index, model_id in enumerate(order):
+        model = db.query(MonitoredModel).filter(MonitoredModel.id == model_id).first()
+        if model:
+            model.sort_order = index
+    
+    db.commit()
+    log_debug("INFO", "models", f"Updated model order: {order}")
+    
+    # Return updated list
+    models = db.query(MonitoredModel).order_by(MonitoredModel.sort_order).all()
+    return models
+

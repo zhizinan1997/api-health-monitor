@@ -30,6 +30,8 @@ class Settings(Base):
     
     # Test Configuration
     test_interval_minutes = Column(Integer, default=60)
+    test_start_hour = Column(Integer, default=0)  # Scheduled test start hour (0-23)
+    test_start_minute = Column(Integer, default=0)  # Scheduled test start minute (0-59)
     
     # SMTP Configuration
     smtp_enabled = Column(Boolean, default=False)
@@ -44,6 +46,9 @@ class Settings(Base):
     # Webhook Configuration (DingTalk)
     webhook_enabled = Column(Boolean, default=False)
     webhook_url = Column(String(500), default="")
+    
+    # Custom Notification Content
+    custom_notification_text = Column(Text, default="")
     
     # Display Configuration
     logo_url = Column(String(500), default="")
@@ -61,6 +66,7 @@ class MonitoredModel(Base):
     display_name = Column(String(100), nullable=False)  # Display name for customers
     logo_url = Column(String(500), default="")  # Logo URL for the model
     enabled = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)  # For custom ordering
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationship to test results

@@ -647,7 +647,8 @@ async function loadMonitoredModels() {
         }
 
         list.innerHTML = models.map(model => `
-            <div class="monitored-item" data-model-id="${model.id}">
+            <div class="monitored-item" data-model-id="${model.id}" draggable="true">
+                <span class="drag-handle" style="cursor: grab; margin-right: 8px; color: var(--text-muted);">⋮⋮</span>
                 <div class="monitored-item-info">
                     ${model.logo_url ? `<img src="${escapeHtml(model.logo_url)}" class="model-logo-small" alt="logo" onerror="this.style.display='none'">` : ''}
                     <div>
@@ -662,6 +663,9 @@ async function loadMonitoredModels() {
                 </div>
             </div>
         `).join('');
+
+        // Setup drag and drop
+        setupDragAndDrop();
 
     } catch (error) {
         console.error('Failed to load monitored models:', error);
@@ -799,7 +803,8 @@ async function testSingleModel(id, name) {
             } else {
                 showToast(i18n.t('msg.testFailed', { name, error: result.error_message || 'Failed' }), 'error');
             }
-            loadModelStatus();
+            // Reload status to update indicator color
+            await loadModelStatus();
         } else {
             showToast(i18n.t('msg.connectionFailed'), 'error');
         }
@@ -809,7 +814,7 @@ async function testSingleModel(id, name) {
 }
 
 /**
- * Test all models (sequential with real-time feedback)
+ * Test all models (parallel with real-time feedback)
  */
 async function testAllModels() {
     const btn = document.getElementById('test-all-btn');
@@ -827,18 +832,15 @@ async function testAllModels() {
         const enabledModels = models.filter(m => m.enabled !== false);
 
         if (enabledModels.length === 0) {
-            showToast(i18n.t('msg.noModelsToTest') || '没有模型可测试', 'warning');
+            showToast('没有模型可测试', 'warning');
             return;
         }
 
         let completed = 0;
-        let passed = 0;
+        const total = enabledModels.length;
 
-        // Test models one by one
-        for (const model of enabledModels) {
-            progressText.textContent = i18n.t('msg.testingProgress', { current: completed + 1, total: enabledModels.length }) || `正在测试 ${completed + 1}/${enabledModels.length}...`;
-            progressFill.style.width = `${(completed / enabledModels.length) * 100}%`;
-
+        // Test all models in parallel
+        const testPromises = enabledModels.map(async (model) => {
             try {
                 const testResponse = await fetch(`${API_BASE}/api/tests/run/${model.id}`, {
                     method: 'POST',
@@ -847,29 +849,44 @@ async function testAllModels() {
 
                 if (testResponse.ok) {
                     const result = await testResponse.json();
-                    if (result.success) {
-                        passed++;
-                    }
+                    completed++;
 
-                    // Update status immediately after each test
+                    // Update progress in real-time
+                    progressText.textContent = `正在测试 ${completed}/${total}...`;
+                    progressFill.style.width = `${(completed / total) * 100}%`;
+
+                    // Update UI immediately
                     await updateModelStatusInList(model.id, result.success, result.error_message);
+
+                    return result;
                 }
             } catch (error) {
+                completed++;
+                progressText.textContent = `正在测试 ${completed}/${total}...`;
+                progressFill.style.width = `${(completed / total) * 100}%`;
                 console.error(`Failed to test model ${model.display_name}:`, error);
+                return { success: false };
             }
+        });
 
-            completed++;
-        }
+        // Wait for all tests to complete
+        const results = await Promise.allSettled(testPromises);
+
+        // Count successes
+        const passed = results.filter(r =>
+            r.status === 'fulfilled' && r.value?.success
+        ).length;
 
         // Show final results
         progressFill.style.width = '100%';
-        showToast(i18n.t('msg.testComplete', { passed, total: enabledModels.length }) || `测试完成: ${passed}/${enabledModels.length} 通过`, passed === enabledModels.length ? 'success' : 'warning');
+        showToast(`测试完成: ${passed}/${total} 通过`, passed === total ? 'success' : 'warning');
 
         // Reload full status after all tests complete
         setTimeout(() => loadModelStatus(), 500);
 
     } catch (error) {
-        showToast(i18n.t('msg.connectionFailed'), 'error');
+        showToast('测试失败，请重试', 'error');
+        console.error('Test all error:', error);
     } finally {
         btn.disabled = false;
         setTimeout(() => progress.classList.add('hidden'), 1000);
@@ -1184,12 +1201,98 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+/**
+ * Setup drag and drop for model sorting
+ */
+function setupDragAndDrop() {
+    const list = document.getElementById('monitored-list');
+    if (!list) return;
+
+    let draggedElement = null;
+
+    // Dragstart event
+    list.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('monitored-item')) {
+            draggedElement = e.target;
+            e.target.style.opacity = '0.5';
+            e.dataTransfer.effectAllowed = 'move';
+        }
+    });
+
+    // Dragend event
+    list.addEventListener('dragend', (e) => {
+        if (e.target.classList.contains('monitored-item')) {
+            e.target.style.opacity = '1';
+            // Save new order
+            saveModelOrder();
+        }
+    });
+
+    // Dragover event
+    list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!draggedElement) return;
+
+        const afterElement = getDragAfterElement(list, e.clientY);
+        if (afterElement == null) {
+            list.appendChild(draggedElement);
+        } else {
+            list.insertBefore(draggedElement, afterElement);
+        }
+    });
+}
+
+/**
+ * Get element after cursor position
+ */
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.monitored-item:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+/**
+ * Save model order to backend
+ */
+async function saveModelOrder() {
+    const items = document.querySelectorAll('.monitored-item');
+    const order = Array.from(items).map(item => parseInt(item.dataset.modelId));
+
+    try {
+        const response = await fetch(`${API_BASE}/api/models/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(order)
+        });
+
+        if (response.ok) {
+            showToast('排序已保存', 'success');
+        }
+    } catch (error) {
+        console.error('Failed to save order:', error);
+        showToast('排序保存失败', 'error');
+    }
+}
+
 // Global functions for inline handlers
 window.addModel = addModel;
 window.removeModel = removeModel;
 window.testSingleModel = testSingleModel;
 window.switchLanguage = switchLanguage;
 window.updateModelLogo = updateModelLogo;
+
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', init);
