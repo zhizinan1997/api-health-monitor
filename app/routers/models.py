@@ -1,7 +1,7 @@
 """
 Model management routes
 """
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Request
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -153,15 +153,21 @@ async def toggle_model(
 
 @router.put("/reorder")
 async def reorder_models(
-    order: List[int] = Body(...),
+    request: Request,
     admin: Admin = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
     """Update model display order"""
+    # 直接读取 JSON body
+    order = await request.json()
+    
+    if not isinstance(order, list):
+        raise HTTPException(status_code=400, detail="Expected a list of model IDs")
+    
     log_debug("INFO", "models", f"Received reorder request: {order}")
     
     for index, model_id in enumerate(order):
-        model = db.query(MonitoredModel).filter(MonitoredModel.id == model_id).first()
+        model = db.query(MonitoredModel).filter(MonitoredModel.id == int(model_id)).first()
         if model:
             model.sort_order = index
             log_debug("DEBUG", "models", f"Set model {model_id} sort_order to {index}")
