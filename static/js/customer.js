@@ -83,7 +83,7 @@ async function loadScheduleInfo() {
             const info = await response.json();
             
             if (lastCheckTimeEl) {
-                lastCheckTimeEl.textContent = info.last_run_time || i18n.t('schedule.notYet');
+                lastCheckTimeEl.textContent = info.last_run_time || '暂无';
             }
             if (nextCheckTimeEl) {
                 nextCheckTimeEl.textContent = info.next_run_time || '--';
@@ -109,7 +109,6 @@ async function loadModelStats() {
 
         // Update UI
         renderModelList();
-        updateLastUpdated();
 
     } catch (error) {
         console.error('Failed to load model stats:', error);
@@ -258,7 +257,7 @@ function createErrorInfo(model) {
 
     return `
         <div class="error-info">
-            <div class="error-title">${i18n.t('error.lastError')}</div>
+            <div class="error-title">最后错误</div>
             <div class="error-message">${errorCode}${escapeHtml(errorMessage)}</div>
         </div>
     `;
@@ -282,26 +281,14 @@ function formatHour(hour) {
 }
 
 /**
- * Update last updated timestamp
- */
-function updateLastUpdated() {
-    const now = new Date();
-    lastUpdatedEl.textContent = now.toLocaleTimeString('zh-CN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
-}
-
-/**
  * Show error state
  */
 function showError() {
     loadingEl.classList.add('hidden');
     emptyStateEl.innerHTML = `
         <div class="empty-icon">⚠️</div>
-        <h2>${i18n.t('site.error.title')}</h2>
-        <p>${i18n.t('site.error.desc')}</p>
+        <h2>加载失败</h2>
+        <p>请稍后重试</p>
     `;
     emptyStateEl.classList.remove('hidden');
     modelListEl.classList.add('hidden');
@@ -315,9 +302,6 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
-
-// Global function for language switch
-window.switchLanguage = switchLanguage;
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', init);
