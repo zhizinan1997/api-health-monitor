@@ -153,7 +153,8 @@ async def get_test_results(
 @router.get("/stats", response_model=List[ModelStats])
 async def get_model_stats(db: Session = Depends(get_db)):
     """Get connectivity statistics for all models (public endpoint)"""
-    models = db.query(MonitoredModel).filter(MonitoredModel.enabled == True).all()
+    # 按 sort_order 排序确保与管理界面顺序一致
+    models = db.query(MonitoredModel).filter(MonitoredModel.enabled == True).order_by(MonitoredModel.sort_order).all()
     stats = []
     
     now = datetime.utcnow()

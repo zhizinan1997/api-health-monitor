@@ -8,18 +8,14 @@ const API_BASE = '';
 const REFRESH_INTERVAL = 60000; // 60 seconds
 
 // State
-let settings = null;
 let modelStats = [];
 
 // DOM Elements
 const loadingEl = document.getElementById('loading');
 const emptyStateEl = document.getElementById('empty-state');
 const modelListEl = document.getElementById('model-list');
-const lastUpdatedEl = document.getElementById('last-updated');
-const modelCountEl = document.getElementById('model-count');
 const siteTitleEl = document.getElementById('site-title');
 const logoEl = document.getElementById('logo');
-const langSwitchEl = document.getElementById('lang-switch');
 const lastCheckTimeEl = document.getElementById('last-check-time');
 const nextCheckTimeEl = document.getElementById('next-check-time');
 
@@ -27,7 +23,6 @@ const nextCheckTimeEl = document.getElementById('next-check-time');
  * Initialize the page
  */
 async function init() {
-    updateUILanguage();
     await loadSettings();
     await loadScheduleInfo();
     await loadModelStats();
@@ -40,37 +35,12 @@ async function init() {
 }
 
 /**
- * Switch language
- */
-function switchLanguage() {
-    i18n.switchLang();
-    updateUILanguage();
-    renderModelList();
-}
-
-/**
- * Update UI with current language
- */
-function updateUILanguage() {
-    // Update language switch button
-    langSwitchEl.textContent = i18n.t('lang.switch');
-
-    // Update all elements with data-i18n attribute
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        el.textContent = i18n.t(el.dataset.i18n);
-    });
-
-    // Update footer
-    updateFooter();
-}
-
-/**
  * Update footer text
  */
 function updateFooter() {
     const footerEl = document.getElementById('footer-text');
     if (footerEl) {
-        footerEl.innerHTML = i18n.t('site.footer', { count: `<span id="model-count">${modelStats.length}</span>` });
+        footerEl.innerHTML = `正在监控 <span id="model-count">${modelStats.length}</span> 个模型 • 每60秒自动刷新`;
     }
 }
 
@@ -171,7 +141,7 @@ function renderModelList() {
  * Create a model card HTML
  */
 function createModelCard(model) {
-    // Check the most recent hourly status slot for current status
+    // Check current status
     const lastStatus = model.hourly_status && model.hourly_status.length > 0
         ? model.hourly_status[model.hourly_status.length - 1]
         : null;
@@ -183,15 +153,14 @@ function createModelCard(model) {
     } else if (lastStatus && lastStatus.success === false) {
         isOnline = false;
     } else if (model.rate_1d !== null) {
-        // No recent test, fall back to rate check
         isOnline = model.rate_1d >= 95;
     }
 
     const statusClass = isOnline === null ? 'unknown' : (isOnline ? 'online' : 'offline');
-    const statusText = isOnline === null ? i18n.t('status.noData') : (isOnline ? i18n.t('status.online') : i18n.t('status.offline'));
+    const statusText = isOnline === null ? '暂无数据' : (isOnline ? '在线' : '异常');
 
     const progressBar = createProgressBar(model.hourly_status);
-    const statsRow = createStatsRow(model);
+    const rate24h = calculateRate24h(model.hourly_status);
     const errorInfo = createErrorInfo(model);
 
     return `
@@ -210,17 +179,22 @@ function createModelCard(model) {
             </div>
             
             <div class="progress-section">
-                <div class="progress-label">
-                    <span>${i18n.t('progress.24hAgo')}</span>
-                    <span>${i18n.t('progress.now')}</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        ${progressBar}
+                    </div>
+                    <div class="progress-ticks">
+                        <span>24h前</span>
+                        <span>18h</span>
+                        <span>12h</span>
+                        <span>6h</span>
+                        <span>现在</span>
+                    </div>
                 </div>
-                <div class="progress-bar">
-                    ${progressBar}
+                <div class="rate-badge ${getValueColorClass(rate24h)}">
+                    <span class="rate-value">${rate24h !== null ? rate24h + '%' : '--'}</span>
+                    <span class="rate-label">24h可用</span>
                 </div>
-            </div>
-            
-            <div class="stats-row">
-                ${statsRow}
             </div>
             
             ${errorInfo}
@@ -229,19 +203,19 @@ function createModelCard(model) {
 }
 
 /**
- * Create progress bar slots
+ * Create progress bar slots with tooltips
  */
 function createProgressBar(hourlyStatus) {
     return hourlyStatus.map((status, index) => {
         let slotClass = 'unknown';
-        let tooltip = `${formatHour(status.hour)}: ${i18n.t('progress.noData')}`;
+        let tooltip = `${formatHour(status.hour)}: 无数据`;
 
         if (status.success === true) {
             slotClass = 'success';
-            tooltip = `${formatHour(status.hour)}: ✓ ${i18n.t('progress.success')}`;
+            tooltip = `${formatHour(status.hour)}: ✓ 正常`;
         } else if (status.success === false) {
             slotClass = 'failure';
-            tooltip = `${formatHour(status.hour)}: ✗ ${i18n.t('progress.failure')}`;
+            tooltip = `${formatHour(status.hour)}: ✗ 故障`;
         }
 
         return `<div class="progress-slot ${slotClass}" data-tooltip="${tooltip}"></div>`;
@@ -249,40 +223,17 @@ function createProgressBar(hourlyStatus) {
 }
 
 /**
- * Create stats row - 只显示24小时成功率，基于格子颜色计算
+ * Calculate 24h success rate based on green slots
  */
-function createStatsRow(model) {
-    // 基于24个格子计算成功率：绿色格子数/24*100%
+function calculateRate24h(hourlyStatus) {
+    if (!hourlyStatus || hourlyStatus.length === 0) return null;
+    
     let greenCount = 0;
-    let totalSlots = 0;
+    hourlyStatus.forEach(status => {
+        if (status.success === true) greenCount++;
+    });
     
-    if (model.hourly_status && model.hourly_status.length > 0) {
-        model.hourly_status.forEach(status => {
-            if (status.success === true) {
-                greenCount++;
-                totalSlots++;
-            } else if (status.success === false) {
-                totalSlots++;
-            }
-            // success === null 的不计入总数
-        });
-    }
-    
-    // 计算成功率
-    let rate24h = null;
-    if (totalSlots > 0) {
-        rate24h = Math.round(greenCount / 24 * 100 * 10) / 10; // 保留一位小数
-    }
-    
-    const value = rate24h !== null ? `${rate24h}%` : '--';
-    const colorClass = getValueColorClass(rate24h);
-
-    return `
-        <div class="stat-item">
-            <span class="stat-label">${i18n.t('stats.1d')}</span>
-            <span class="stat-value ${colorClass}">${value}</span>
-        </div>
-    `;
+    return Math.round(greenCount / 24 * 100 * 10) / 10;
 }
 
 /**

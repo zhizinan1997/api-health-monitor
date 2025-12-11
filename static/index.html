@@ -11,27 +11,18 @@
 
 <body>
     <div class="container">
-        <!-- Language Switch -->
-        <button id="lang-switch" class="lang-switch" onclick="switchLanguage()">中文</button>
-
         <!-- Header -->
         <header class="header">
             <div class="logo-section">
                 <img id="logo" src="" alt="Logo" class="logo hidden">
                 <h1 id="site-title">API Health Monitor</h1>
             </div>
-            <div class="header-info">
-                <div class="schedule-info">
-                    <span class="schedule-label" data-i18n="schedule.lastCheck">上次检测：</span>
-                    <span id="last-check-time">--</span>
-                    <span class="schedule-separator">|</span>
-                    <span class="schedule-label" data-i18n="schedule.nextCheck">下次检测：</span>
-                    <span id="next-check-time">--</span>
-                </div>
-                <div class="last-update">
-                    <span class="update-label" data-i18n="site.lastUpdated">最后更新：</span>
-                    <span id="last-updated">--</span>
-                </div>
+            <div class="schedule-info">
+                <span class="schedule-label">上次检测：</span>
+                <span id="last-check-time">--</span>
+                <span class="schedule-separator">|</span>
+                <span class="schedule-label">下次检测：</span>
+                <span id="next-check-time">--</span>
             </div>
         </header>
 

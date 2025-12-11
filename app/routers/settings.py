@@ -92,9 +92,18 @@ async def update_settings(
     
     db.commit()
     
-    # Update scheduler if interval changed
-    if data.test_interval_minutes is not None:
-        update_scheduler_interval(data.test_interval_minutes)
+    # 当任何调度相关设置改变时，重新配置调度器
+    if (data.test_interval_minutes is not None or 
+        data.test_start_hour is not None or 
+        data.test_start_minute is not None):
+        # 获取最新的设置值
+        db.refresh(settings)
+        from app.scheduler import update_scheduler_settings
+        update_scheduler_settings(
+            interval_minutes=settings.test_interval_minutes or 60,
+            start_hour=settings.test_start_hour or 0,
+            start_minute=settings.test_start_minute or 0
+        )
     
     log_debug("INFO", "settings", "设置已更新")
     return {"message": "设置保存成功"}
