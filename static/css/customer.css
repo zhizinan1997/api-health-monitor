@@ -113,9 +113,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 0;
+  padding: 16px 24px;
   margin-bottom: 28px;
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px; /* Rounded corners */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .logo-section {
@@ -265,7 +270,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 14px 16px; /* Reduced padding */
   transition: var(--transition);
   display: flex;
   flex-direction: column;
@@ -281,9 +286,9 @@ body {
 .model-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  gap: 10px;
+  align-items: center; /* Better alignment */
+  margin-bottom: 10px; /* Reduced margin */
+  gap: 8px;
 }
 
 .model-info {
@@ -295,13 +300,13 @@ body {
 }
 
 .model-logo {
-  width: 40px;
-  height: 40px;
+  width: 32px; /* Smaller logo */
+  height: 32px;
   border-radius: var(--radius-sm);
   object-fit: contain;
   flex-shrink: 0;
   background: var(--bg-secondary);
-  padding: 4px;
+  padding: 3px;
 }
 
 .model-name {
@@ -326,10 +331,10 @@ body {
 .model-status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 4px 10px; /* Smaller padding */
   border-radius: 50px;
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* Slightly smaller font */
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -407,9 +412,9 @@ body {
 /* Progress Bar Container with Rate Badge */
 .progress-section {
   display: flex;
-  gap: 16px;
+  gap: 12px; /* Reduced gap */
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* Reduced margin */
 }
 
 .progress-bar-container {
@@ -419,11 +424,11 @@ body {
 .progress-bar {
   display: flex;
   gap: 2px;
-  height: 24px;
+  height: 20px; /* Smaller height */
   background: var(--bg-secondary);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  padding: 3px;
+  padding: 2px;
 }
 
 /* Time Ticks under progress bar */
@@ -442,8 +447,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 70px;
-  padding: 8px 12px;
+  min-width: 60px; /* Smaller width */
+  padding: 6px 10px; /* Smaller padding */
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -679,39 +684,21 @@ body {
 /* Glassmorphism Card Style */
 /* Glassmorphism Card Style */
 .model-card {
-  background: rgba(255, 255, 255, 0.45) !important;
+  background: rgba(255, 255, 255, 0.45) !important; /* Increased transparency */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
   border-radius: var(--radius-lg);
-  padding: 16px; /* Reduced padding from 24px/20px */
   box-shadow: 
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 2px 4px -1px rgba(0, 0, 0, 0.03),
     0 0 0 1px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* Control gap between elements */
-}
-
-.model-header {
-  margin-bottom: 0; /* Remove bottom margin */
-}
-
-/* Make Rate Badge more compact */
-.rate-badge {
-  min-width: 60px;
-  padding: 6px 10px;
-}
-
-.rate-value {
-  font-size: 1.1rem;
 }
 
 .model-card:hover {
   transform: translateY(-4px); 
-  background: rgba(255, 255, 255, 0.65) !important; 
+  background: rgba(255, 255, 255, 0.65) !important; /* Slightly more opaque on hover */
   border-color: rgba(255, 255, 255, 0.8) !important;
   box-shadow: 
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
