@@ -26,6 +26,7 @@ async function init() {
     await loadSettings();
     await loadScheduleInfo();
     await loadModelStats();
+    await initParticles();
 
     // Auto-refresh
     setInterval(async () => {
@@ -305,3 +306,19 @@ function escapeHtml(text) {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', init);
+
+/**
+ * Initialize particles
+ */
+async function initParticles() {
+    if (typeof tsParticles !== 'undefined' && typeof particlesConfig !== 'undefined') {
+        try {
+            await tsParticles.load("tsparticles", particlesConfig);
+            console.log("Particles initialized");
+        } catch (error) {
+            console.warn("Failed to initialize particles:", error);
+        }
+    } else {
+        console.warn("tsParticles or particlesConfig not found");
+    }
+}

@@ -89,6 +89,40 @@ async def add_model(
     return model
 
 
+# ==========================================
+# 重要：/reorder 路由必须在 /{model_id} 之前
+# 否则 "reorder" 会被误当作 model_id 参数
+# ==========================================
+
+@router.put("/reorder")
+async def reorder_models(
+    request: Request,
+    admin: Admin = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """Update model display order"""
+    # 直接读取 JSON body
+    order = await request.json()
+    
+    if not isinstance(order, list):
+        raise HTTPException(status_code=400, detail="Expected a list of model IDs")
+    
+    log_debug("INFO", "models", f"Received reorder request: {order}")
+    
+    for index, model_id in enumerate(order):
+        model = db.query(MonitoredModel).filter(MonitoredModel.id == int(model_id)).first()
+        if model:
+            model.sort_order = index
+            log_debug("DEBUG", "models", f"Set model {model_id} sort_order to {index}")
+    
+    db.commit()
+    log_debug("INFO", "models", f"Successfully updated model order: {order}")
+    
+    # Return updated list
+    models = db.query(MonitoredModel).order_by(MonitoredModel.sort_order).all()
+    return models
+
+
 @router.put("/{model_id}", response_model=ModelResponse)
 async def update_model(
     model_id: int,
@@ -149,34 +183,3 @@ async def toggle_model(
     status = "enabled" if model.enabled else "disabled"
     log_debug("INFO", "models", f"Model {model.model_id} {status}")
     return {"message": f"Model {status}", "enabled": model.enabled}
-
-
-@router.put("/reorder")
-async def reorder_models(
-    request: Request,
-    admin: Admin = Depends(get_current_admin),
-    db: Session = Depends(get_db)
-):
-    """Update model display order"""
-    # 直接读取 JSON body
-    order = await request.json()
-    
-    if not isinstance(order, list):
-        raise HTTPException(status_code=400, detail="Expected a list of model IDs")
-    
-    log_debug("INFO", "models", f"Received reorder request: {order}")
-    
-    for index, model_id in enumerate(order):
-        model = db.query(MonitoredModel).filter(MonitoredModel.id == int(model_id)).first()
-        if model:
-            model.sort_order = index
-            log_debug("DEBUG", "models", f"Set model {model_id} sort_order to {index}")
-    
-    db.commit()
-    log_debug("INFO", "models", f"Successfully updated model order: {order}")
-    
-    # Return updated list
-    models = db.query(MonitoredModel).order_by(MonitoredModel.sort_order).all()
-    return models
-
-
