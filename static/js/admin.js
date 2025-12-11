@@ -1252,11 +1252,16 @@ function escapeHtml(text) {
 /**
  * Setup drag and drop for model sorting
  */
+let dragDropInitialized = false;
+let draggedElement = null;
+
 function setupDragAndDrop() {
     const list = document.getElementById('monitored-list');
     if (!list) return;
 
-    let draggedElement = null;
+    // 防止重复添加事件监听器
+    if (dragDropInitialized) return;
+    dragDropInitialized = true;
 
     // Dragstart event
     list.addEventListener('dragstart', (e) => {
@@ -1271,6 +1276,7 @@ function setupDragAndDrop() {
     list.addEventListener('dragend', (e) => {
         if (e.target.classList.contains('monitored-item')) {
             e.target.style.opacity = '1';
+            draggedElement = null;
             // Save new order
             saveModelOrder();
         }
@@ -1312,8 +1318,15 @@ function getDragAfterElement(container, y) {
  * Save model order to backend
  */
 async function saveModelOrder() {
-    const items = document.querySelectorAll('.monitored-item');
+    const items = document.querySelectorAll('#monitored-list .monitored-item');
     const order = Array.from(items).map(item => parseInt(item.dataset.modelId));
+
+    console.log('Saving model order:', order);
+
+    if (order.length === 0) {
+        console.warn('No models to reorder');
+        return;
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/models/reorder`, {
@@ -1326,11 +1339,16 @@ async function saveModelOrder() {
         });
 
         if (response.ok) {
+            console.log('Order saved successfully');
             showToast('排序已保存', 'success');
+        } else {
+            const errorText = await response.text();
+            console.error('Failed to save order:', response.status, errorText);
+            showToast('排序保存失败: ' + response.status, 'error');
         }
     } catch (error) {
         console.error('Failed to save order:', error);
-        showToast('排序保存失败', 'error');
+        showToast('排序保存失败: ' + error.message, 'error');
     }
 }
 
@@ -1338,7 +1356,6 @@ async function saveModelOrder() {
 window.addModel = addModel;
 window.removeModel = removeModel;
 window.testSingleModel = testSingleModel;
-window.switchLanguage = switchLanguage;
 window.updateModelLogo = updateModelLogo;
 
 
