@@ -149,6 +149,11 @@ const i18n = {
             'msg.saveSettingsFirst': 'Please save settings first!',
             'msg.testNotificationSent': 'Test alert sent successfully!',
 
+            // Schedule
+            'schedule.lastCheck': 'Last Check:',
+            'schedule.nextCheck': 'Next Check:',
+            'schedule.notYet': 'Not yet',
+
             // Language
             'lang.switch': '中文'
         },
@@ -293,6 +298,11 @@ const i18n = {
             'msg.logoSaved': 'Logo 已保存！',
             'msg.saveSettingsFirst': '请先保存设置！',
             'msg.testNotificationSent': '测试告警发送成功！',
+
+            // Schedule
+            'schedule.lastCheck': '上次检测：',
+            'schedule.nextCheck': '下次检测：',
+            'schedule.notYet': '暂无',
 
             // Language
             'lang.switch': 'EN'

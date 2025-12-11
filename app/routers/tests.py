@@ -15,6 +15,7 @@ from app.auth import get_current_admin
 from app.api_client import test_model_connectivity
 from app.notifier import notify_model_failure
 from app.logger import log_debug
+from app.scheduler import get_schedule_info
 
 router = APIRouter(prefix="/api/tests", tags=["tests"])
 
@@ -197,7 +198,15 @@ async def get_model_stats(db: Session = Depends(get_db)):
 
 
 def _calculate_hourly_status(db: Session, model_id: int, now: datetime) -> List[HourlyStatus]:
-    """Calculate hourly status for last 24 hours"""
+    """Calculate hourly status for last 24 hours
+    
+    每个小时格子的颜色由该小时内最后一次测试结果决定：
+    - 最后一次测试成功 → 绿色
+    - 最后一次测试失败 → 红色
+    - 没有测试 → 灰色
+    
+    这样管理员手动修复后测试成功，格子会变绿
+    """
     # Get Beijing time now
     beijing_now = now.replace(tzinfo=pytz.UTC).astimezone(BEIJING_TZ)
     
@@ -213,16 +222,16 @@ def _calculate_hourly_status(db: Session, model_id: int, now: datetime) -> List[
         slot_start_utc = slot_start.astimezone(pytz.UTC).replace(tzinfo=None)
         slot_end_utc = slot_end.astimezone(pytz.UTC).replace(tzinfo=None)
         
-        # Get results for this hour
-        results = db.query(TestResult).filter(
+        # Get the LAST test result for this hour (ordered by time)
+        last_result = db.query(TestResult).filter(
             TestResult.model_id == model_id,
             TestResult.tested_at >= slot_start_utc,
             TestResult.tested_at < slot_end_utc
-        ).all()
+        ).order_by(TestResult.tested_at.desc()).first()
         
-        if results:
-            # If any test failed in this hour, mark as failed
-            success = all(r.success for r in results)
+        if last_result:
+            # 最后一次测试结果决定格子颜色
+            success = last_result.success
         else:
             success = None  # No test in this hour
         
@@ -254,3 +263,9 @@ def _calculate_rate(db: Session, model_id: int, now: datetime, days: int) -> Opt
     ).count()
     
     return round(success / total * 100, 1)
+
+
+@router.get("/schedule-info")
+async def get_schedule_info_endpoint():
+    """获取定时任务的调度信息（上次和下次执行时间）- 公开接口"""
+    return get_schedule_info()

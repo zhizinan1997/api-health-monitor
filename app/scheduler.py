@@ -15,6 +15,7 @@ from app.logger import log_debug
 # Global scheduler instance
 scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
 _current_interval = None
+_last_run_time = None  # 记录上次执行时间（上海时区）
 
 
 def get_settings(db: Session) -> Settings:
@@ -38,6 +39,12 @@ async def run_scheduled_tests():
     4. Send notifications only for models that fail both tests
     """
     import asyncio
+    import pytz
+    
+    global _last_run_time
+    # 记录本次执行时间（上海时区）
+    shanghai_tz = pytz.timezone("Asia/Shanghai")
+    _last_run_time = datetime.now(shanghai_tz)
     
     log_debug("INFO", "scheduler", "Starting scheduled model tests (Phase 1)")
     
@@ -213,3 +220,32 @@ def cleanup_old_results(days: int = 90):
         db.rollback()
     finally:
         db.close()
+
+
+def get_schedule_info():
+    """获取调度器信息：上次执行时间和下次执行时间"""
+    import pytz
+    
+    shanghai_tz = pytz.timezone("Asia/Shanghai")
+    
+    # 上次执行时间
+    last_run = None
+    if _last_run_time:
+        last_run = _last_run_time.strftime("%Y-%m-%d %H:%M:%S")
+    
+    # 下次执行时间
+    next_run = None
+    try:
+        job = scheduler.get_job("model_health_check")
+        if job and job.next_run_time:
+            # 转换为上海时区
+            next_run_shanghai = job.next_run_time.astimezone(shanghai_tz)
+            next_run = next_run_shanghai.strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        pass
+    
+    return {
+        "last_run_time": last_run,
+        "next_run_time": next_run
+    }
+

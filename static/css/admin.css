@@ -402,6 +402,35 @@ body {
     flex-wrap: wrap;
 }
 
+/* Schedule Info Panel for Admin */
+.schedule-info-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.schedule-info-panel .schedule-label {
+    color: var(--text-muted);
+}
+
+.schedule-info-panel .schedule-separator {
+    color: var(--border-color);
+    margin: 0 4px;
+}
+
+#admin-last-check-time,
+#admin-next-check-time {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
 /* Status Cards */
 .model-status-list {
     display: flex;

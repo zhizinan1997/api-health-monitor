@@ -20,6 +20,8 @@ const modelCountEl = document.getElementById('model-count');
 const siteTitleEl = document.getElementById('site-title');
 const logoEl = document.getElementById('logo');
 const langSwitchEl = document.getElementById('lang-switch');
+const lastCheckTimeEl = document.getElementById('last-check-time');
+const nextCheckTimeEl = document.getElementById('next-check-time');
 
 /**
  * Initialize the page
@@ -27,10 +29,14 @@ const langSwitchEl = document.getElementById('lang-switch');
 async function init() {
     updateUILanguage();
     await loadSettings();
+    await loadScheduleInfo();
     await loadModelStats();
 
     // Auto-refresh
-    setInterval(loadModelStats, REFRESH_INTERVAL);
+    setInterval(async () => {
+        await loadScheduleInfo();
+        await loadModelStats();
+    }, REFRESH_INTERVAL);
 }
 
 /**
@@ -94,6 +100,27 @@ async function loadSettings() {
         }
     } catch (error) {
         console.error('Failed to load settings:', error);
+    }
+}
+
+/**
+ * Load schedule info (last and next check times)
+ */
+async function loadScheduleInfo() {
+    try {
+        const response = await fetch(`${API_BASE}/api/tests/schedule-info`);
+        if (response.ok) {
+            const info = await response.json();
+            
+            if (lastCheckTimeEl) {
+                lastCheckTimeEl.textContent = info.last_run_time || i18n.t('schedule.notYet');
+            }
+            if (nextCheckTimeEl) {
+                nextCheckTimeEl.textContent = info.next_run_time || '--';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load schedule info:', error);
     }
 }
 
@@ -222,27 +249,40 @@ function createProgressBar(hourlyStatus) {
 }
 
 /**
- * Create stats row
+ * Create stats row - 只显示24小时成功率，基于格子颜色计算
  */
 function createStatsRow(model) {
-    const stats = [
-        { label: i18n.t('stats.1d'), value: model.rate_1d },
-        { label: i18n.t('stats.3d'), value: model.rate_3d },
-        { label: i18n.t('stats.7d'), value: model.rate_7d },
-        { label: i18n.t('stats.30d'), value: model.rate_30d }
-    ];
+    // 基于24个格子计算成功率：绿色格子数/24*100%
+    let greenCount = 0;
+    let totalSlots = 0;
+    
+    if (model.hourly_status && model.hourly_status.length > 0) {
+        model.hourly_status.forEach(status => {
+            if (status.success === true) {
+                greenCount++;
+                totalSlots++;
+            } else if (status.success === false) {
+                totalSlots++;
+            }
+            // success === null 的不计入总数
+        });
+    }
+    
+    // 计算成功率
+    let rate24h = null;
+    if (totalSlots > 0) {
+        rate24h = Math.round(greenCount / 24 * 100 * 10) / 10; // 保留一位小数
+    }
+    
+    const value = rate24h !== null ? `${rate24h}%` : '--';
+    const colorClass = getValueColorClass(rate24h);
 
-    return stats.map(stat => {
-        const value = stat.value !== null ? `${stat.value}%` : '--';
-        const colorClass = getValueColorClass(stat.value);
-
-        return `
-            <div class="stat-item">
-                <span class="stat-label">${stat.label}</span>
-                <span class="stat-value ${colorClass}">${value}</span>
-            </div>
-        `;
-    }).join('');
+    return `
+        <div class="stat-item">
+            <span class="stat-label">${i18n.t('stats.1d')}</span>
+            <span class="stat-value ${colorClass}">${value}</span>
+        </div>
+    `;
 }
 
 /**

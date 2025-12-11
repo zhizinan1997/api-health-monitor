@@ -157,6 +157,7 @@ function showDashboard(username) {
 
     // Load initial data
     loadSettings();
+    loadScheduleInfo();
     loadModelStatus();
     loadMonitoredModels();
 }
@@ -732,6 +733,30 @@ async function removeModel(id, name) {
         }
     } catch (error) {
         showToast(i18n.t('msg.connectionFailed'), 'error');
+    }
+}
+
+/**
+ * Load schedule info (last and next check times) for admin
+ */
+async function loadScheduleInfo() {
+    try {
+        const response = await fetch(`${API_BASE}/api/tests/schedule-info`);
+        if (response.ok) {
+            const info = await response.json();
+            
+            const lastCheckEl = document.getElementById('admin-last-check-time');
+            const nextCheckEl = document.getElementById('admin-next-check-time');
+            
+            if (lastCheckEl) {
+                lastCheckEl.textContent = info.last_run_time || (i18n.t('schedule.notYet') || '暂无');
+            }
+            if (nextCheckEl) {
+                nextCheckEl.textContent = info.next_run_time || '--';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load schedule info:', error);
     }
 }
 
